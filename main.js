@@ -95,23 +95,25 @@ document.addEventListener("DOMContentLoaded", () => {
     list.forEach((e,i) => e.addEventListener("click", () => {
       stop(arr, current);
       play(arr, i, list);
-      musicSetSettings(arr, i);
+      musicSetSettings(arr, i, true);
       current = i;
     }));
   }
 // functions for music time
   function musicPreviousSetup(arr, index){
     arr[index].addEventListener("loadedmetadata", () => {
-      musicSetSettings(arr, index);
+      musicSetSettings(arr, index, true);
     });
       timeLine.value = 0;
       displayMusicInfo[1].textContent = 44;
   }
 
-  function musicSetSettings(arr, index){
-    timeLine.max = arr[index].duration;
-    playlistAllTime[0].textContent = countMusicTime(arr[index].duration);
-    displayMusicInfo[0].textContent = Math.floor(arrMusicSize[index]*8/arr[index].duration/1000);
+  function musicSetSettings(arr, index, bool){
+    if(bool){
+      timeLine.max = arr[index].duration;
+      playlistAllTime[0].textContent = countMusicTime(arr[index].duration);
+      displayMusicInfo[0].textContent = Math.floor(arrMusicSize[index]*8/arr[index].duration/1000);
+    }
     musicBar.textContent = `${index+1}. ${arr[index].textContent} (${countMusicTime(arr[index].duration)})`;
   }
 
@@ -125,13 +127,21 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  timeLine.addEventListener("mousedown", () => {
-    listOfSongs[current].removeEventListener("timeupdate", timeLineHandler, false);
+  timeLine.addEventListener("input", () => {
+    if(listOfSongs.length > 0){
+      listOfSongs[current].removeEventListener("timeupdate", timeLineHandler, false);
+      musicBar.classList.remove("musicBarScroll");
+      musicBar.textContent = `SEEK TO: ${countMusicTime(timeLine.value)}/${countMusicTime(listOfSongs[current].duration)}
+      ${Math.round(+timeLine.value/listOfSongs[current].duration * 100)}%`;
+    }
   });
 
   timeLine.addEventListener("change", () => {
-    listOfSongs[current].currentTime = timeLine.value;
-    listOfSongs[current].addEventListener("timeupdate", timeLineHandler, false);
+    if(listOfSongs.length > 0){
+      listOfSongs[current].currentTime = timeLine.value;
+      listOfSongs[current].addEventListener("timeupdate", timeLineHandler, false);
+      musicSetSettings(listOfSongs, current, false);
+    }
   });
 
   // music volume
@@ -145,7 +155,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   balanceSlider.addEventListener("input", () => {
     let side = balanceSlider.value < 0 ? `${-balanceSlider.value *100 }% LEFT`:
-              balanceSlider.value > 0 ? `${balanceSlider.value *100 }% RIGHT`: "CENTER";
+               balanceSlider.value > 0 ? `${balanceSlider.value *100 }% RIGHT`: "CENTER";
     musicBar.classList.remove("musicBarScroll");
     musicBar.textContent = `Balance: ${side}`;
     return balanceOutput(pannerNode);
@@ -154,7 +164,7 @@ document.addEventListener("DOMContentLoaded", () => {
   balanceSlider.addEventListener("mouseup", () => {
     musicBar.classList.add("musicBarScroll");
     if(listOfSongs.length > 0){
-      musicBar.textContent = `${current+1}. ${listOfSongs[current].textContent} (${countMusicTime(listOfSongs[current].duration)})`;
+      musicSetSettings(listOfSongs, current, false);
     }else {
       musicBar.textContent = "";
     }
@@ -169,7 +179,7 @@ document.addEventListener("DOMContentLoaded", () => {
   volume.addEventListener("mouseup", () => {
     musicBar.classList.add("musicBarScroll");
     if(listOfSongs.length > 0){
-      musicBar.textContent = `${current+1}. ${listOfSongs[current].textContent} (${countMusicTime(listOfSongs[current].duration)})`;
+      musicSetSettings(listOfSongs, current, false);
     }else {
       musicBar.textContent = "";
     }
@@ -252,7 +262,7 @@ document.addEventListener("DOMContentLoaded", () => {
         showSong(list, index);
       }
       current = index;
-    musicSetSettings(arr, index);
+    musicSetSettings(arr, index, true);
   }
 
   function prevSong(arr, index, list){
@@ -263,14 +273,14 @@ document.addEventListener("DOMContentLoaded", () => {
       showSong(list, index);
     }
     current = index;
-    musicSetSettings(arr, index);
+    musicSetSettings(arr, index, true);
   }
 
   function onEnd(arr, i, list){
     if(arr.length != i){
       play(arr, i, list);
       current = i;
-      musicSetSettings(arr, i);
+      musicSetSettings(arr, i, true);
     } else {
       play(arr, 0, list);
     }

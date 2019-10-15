@@ -149,8 +149,9 @@
 
 .fa{
   color: #2bff31;
-  width: 15px;
-  height: 15px;
+  width: 25px;
+  height: 25px;
+  font-size: 25px;
   position: relative;
   display: block;
 }
