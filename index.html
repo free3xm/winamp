@@ -26,12 +26,14 @@
       <div class="player_section_head">
         <div class="player_display">
           <div class="display_header">
-            <div class="palyer_state"></div>
+            <div class="player_state">
+                <div class="fa fa-stop"></div>
+            </div>
             <div class="display_time"></div>
           </div>
         </div>
         <div class="player_main_controls">
-          <div class="header_music_bar"></div>
+          <div class="header_music_bar"><span class="musicBarScroll"></span></div>
           <div class="header_music_info">
             <div class="info_kbps_wrapper">
               <div class="display_kbps"></div>
@@ -41,13 +43,13 @@
               <div class="display_khz"></div>
               <div class="text_khz">kHz</div>
             </div>
-            <div class="info_music_qualtiy">
+            <div class="info_music_quality">
               <div class="music_mono">mono</div>
               <div class="music_stereo">stereo</div>
             </div>
           </div>
           <div class="header_music_controls">
-            <input type="range" class="volume" min="-100" max="100" value="50" step="1">
+            <input type="range" class="volume" min="-100" max="0" value="-50" step="1">
             <input type="range" class="changeSide" min="-1" max="1" value="0" step="0.1">
             <button class="btn_toggle_eq"></button>
             <button class="btn_toggle_pl"></button>
