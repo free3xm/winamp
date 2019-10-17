@@ -15,25 +15,32 @@ document.addEventListener("DOMContentLoaded", () => {
         volume = document.querySelector(".volume"),
         balanceSlider = document.querySelector(".changeSide"),
         musicQuality = document.querySelectorAll(".music_mono, .music_stereo"),
-        playerState = document.querySelector(".fa");
-
-  window.AudioContext = window.AudioContext || window.webkitAudioContext;
+        playerState = document.querySelector(".fa"),
+        freqSlider = document.querySelectorAll(".freq"),
+        canvas = document.querySelector("#canvas"),
+        labelHandler = document.querySelector(".labelDB"),
+        ctx = canvas.getContext("2d"),
+        context = new (window.AudioContext || window.webkitAudioContext),
+        pannerNode = context.createStereoPanner(),
+        gainNode = context.createGain(),
+        state = {
+          play: "fa-play",
+          pause: "fa-pause",
+          stop: "fa-stop"
+        },
+        arrOfHz =["60HZ", "170HZ", "310HZ", "600HZ", "1KHZ",
+                  "3KHZ", "6KHZ", "12KHZ", "14KHZ", "16KHZ"];
+let info = document.querySelector(".block-info");
 
   let playlistMusicList,
-      context = new AudioContext(),
-      pannerNode = context.createStereoPanner(),
-      gainNode = context.createGain(),
       playlistTime = {
         songTime: 0,
         listTime: 0
       },
       current = 0,
       timer,
-      state = {
-        play: "fa-play",
-        pause: "fa-pause",
-        stop: "fa-stop"
-      },
+      points = [{x:0,y:17.5},{x:20.9,y:17.5},{x:41.8,y:17.5},{x:62.7,y:17.5},{x:83.6,y:17.5},
+             {x:104.5,y:17.5},{x:125.4,y:17.5},{x:146.3,y:17.5},{x:167.2,y:17.5},{x:188.1,y:17.5}],
       arrMusicSize = [],
       listOfSource = new WeakMap(),
       listOfSongs  = [];
@@ -45,7 +52,95 @@ document.addEventListener("DOMContentLoaded", () => {
   timeLine.value = 0;
   playlistAllTime.forEach(e => e.textContent = "00:00");
 
+  // canvas equalizer
+
+  function canvasEq(pts, ctx){
+    let gradient = ctx.createLinearGradient(0, 5, 0, 30);
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+
+    gradient.addColorStop(0, 'red');
+    gradient.addColorStop(0.5, 'yellow');
+    gradient.addColorStop(1, 'green');
+
+   for (let i = 1; i < pts.length - 2; i++){
+      let xc = (pts[i].x + pts[i + 1].x) / 2,
+          yc = (pts[i].y + pts[i + 1].y) / 2;
+      ctx.quadraticCurveTo(pts[i].x, pts[i].y, xc, yc);
+    }
+
+    ctx.quadraticCurveTo(pts[pts.length-2].x, pts[pts.length-2].y, pts[pts.length-1].x,pts[pts.length-1].y);
+    ctx.strokeStyle = gradient;
+    ctx.stroke();
+  }
+
+  function ptsReassign(pts){
+    pts.forEach((e, i) => {
+      e.y = 17.5 - +freqSlider[i].value * 1.458;
+        dynamicColors(freqSlider[i], 12, 6, +765,255);
+    });
+  }
+  ptsReassign(points);
+  canvasEq(points, ctx);
+
+  //fucntion frequency
+
+  function createFilter(freq){
+    let filter = context.createBiquadFilter();
+
+    filter.type = "peaking";
+    filter.frequency.value = freq;
+    filter.Q.value = 1;
+    filter.gain.value = 1;
+
+    return filter;
+  }
+
+  function createFilters(){
+    let frequencies = [60, 170, 310, 600, 1000, 3000, 6000, 12000, 14000, 16000],
+        filters = frequencies.map(createFilter);
+
+    filters.reduce((prev, curr) => {
+      prev.connect(curr);
+      return curr;
+    });
+
+    return filters;
+  }
+
+  const filters = createFilters();
+  filters[filters.length - 1].connect(gainNode);
+  filters[filters.length - 1].connect(pannerNode);
+
+  freqSlider.forEach((e,i) =>{
+    e.addEventListener("input", () => {
+      filters[i].gain.value = e.value;
+      points[i].y = 17.5 -  +e.value * 1.458;
+      canvasEq(points,ctx);
+      dynamicColors(e, 12, 6, +765,255);
+      musicBar.classList.remove("musicBarScroll");
+      musicBar.textContent = `EQ: ${arrOfHz[i]} ${ e.value < 0 ? e.value : "+" + e.value } DB`;
+    }, false);
+
+    e.addEventListener("mouseup",returnPrevDisplay);
+  });
+
+  function pressetEq(db){
+    freqSlider.forEach(e => e.value = db);
+    ptsReassign(points);
+    canvasEq(points, ctx);
+  }
+
+  labelHandler.addEventListener("click", event => {
+    if(event.target.tagName == "SPAN"){
+      pressetEq(event.target.getAttribute("name"));
+    }
+  });
+
   // functions for playlist
+
   function fillPlaylist(arr){
     playlistTime.listTime = 0;
     playlistTime.songTime = 0;
@@ -79,7 +174,8 @@ document.addEventListener("DOMContentLoaded", () => {
         secondNumber =  Math.floor(counter%60);
         firstNumber = firstNumber < 10 ? "0" + firstNumber : firstNumber;
         secondNumber = secondNumber < 10 ? "0" + secondNumber : secondNumber;
-        return  `${firstNumber}:${secondNumber}`;
+
+    return  `${firstNumber}:${secondNumber}`;
   }
 
   function showSong(list, index){
@@ -99,13 +195,34 @@ document.addEventListener("DOMContentLoaded", () => {
       current = i;
     }));
   }
-// functions for music time
+// function for dynamics color of input
+
+function dynamicColors(inp, max, counter=0, colorCnt1 = 0, colorCnt2 =0){
+  let num = 255/max*2,
+      value = +inp.value + counter;
+  if(value > max/2){
+    inp.style.background = `rgb(255, ${-value * num +colorCnt1}, 0)`;
+  } else{
+      inp.style.background = `rgb(${value * num + colorCnt2}, 255, 0)`;
+    }
+}
+function dynColorBalance(inp){
+  let value = inp.value < 0 ? -inp.value : inp.value;
+  if(inp.value == 0){
+    inp.style.background = "green";
+  } else {
+    inp.style.background = `rgb(255, ${value * -255 +255 }, 0)`;
+    console.log(`rgb(255, ${value * -255 +255}, 0)`);
+  }
+}
+// functions for music time and display
+
   function musicPreviousSetup(arr, index){
     arr[index].addEventListener("loadedmetadata", () => {
       musicSetSettings(arr, index, true);
     });
       timeLine.value = 0;
-      displayMusicInfo[1].textContent = 44;
+      displayMusicInfo[1].textContent = context.sampleRate/1000;
   }
 
   function musicSetSettings(arr, index, bool){
@@ -144,7 +261,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  function returnPrevDisplay(){
+    musicBar.classList.add("musicBarScroll");
+    if(listOfSongs.length > 0){
+      musicSetSettings(listOfSongs, current, false);
+    }else {
+      musicBar.textContent = "";
+    }
+  }
   // music volume
+  dynamicColors(volume,50,100, 510);
+  dynColorBalance(balanceSlider);
   function balanceOutput(panner){
     panner.pan.value = balanceSlider.value;
   }
@@ -153,54 +280,42 @@ document.addEventListener("DOMContentLoaded", () => {
    gain.gain.value = volume.value/100 ;
   }
 
-  balanceSlider.addEventListener("input", () => {
-    let side = balanceSlider.value < 0 ? `${-balanceSlider.value *100 }% LEFT`:
-               balanceSlider.value > 0 ? `${balanceSlider.value *100 }% RIGHT`: "CENTER";
-    musicBar.classList.remove("musicBarScroll");
-    musicBar.textContent = `Balance: ${side}`;
-    return balanceOutput(pannerNode);
-    }
-  );
-  balanceSlider.addEventListener("mouseup", () => {
-    musicBar.classList.add("musicBarScroll");
-    if(listOfSongs.length > 0){
-      musicSetSettings(listOfSongs, current, false);
-    }else {
-      musicBar.textContent = "";
-    }
-  });
-
-  volume.addEventListener("input", () => {
-    musicBar.classList.remove("musicBarScroll");
-    musicBar.textContent = `VOLUME: ${+volume.value + 100}%`;
-    return volumeGain(gainNode);
-  });
-
-  volume.addEventListener("mouseup", () => {
-    musicBar.classList.add("musicBarScroll");
-    if(listOfSongs.length > 0){
-      musicSetSettings(listOfSongs, current, false);
-    }else {
-      musicBar.textContent = "";
-    }
-  });
-
   function checkQuality(){
     if(pannerNode.channelCount > 1 ){
       musicQuality[1].classList.add("activeQuality");
     } else {
       musicQuality[0].classList.add("activeQuality");
     }
-
   }
+
+  balanceSlider.addEventListener("input", () => {
+    let side = balanceSlider.value < 0 ? `${-balanceSlider.value *100 }% LEFT`:
+               balanceSlider.value > 0 ? `${balanceSlider.value *100 }% RIGHT`: "CENTER";
+    musicBar.classList.remove("musicBarScroll");
+    musicBar.textContent = `Balance: ${side}`;
+    dynColorBalance(balanceSlider);
+    balanceOutput(pannerNode);
+    }
+  );
+  balanceSlider.addEventListener("mouseup", returnPrevDisplay);
+
+
+  volume.addEventListener("input", () => {
+    musicBar.classList.remove("musicBarScroll");
+    musicBar.textContent = `VOLUME: ${+volume.value * 2 + 200}%`;
+    dynamicColors(volume,50,100, 510);
+    volumeGain(gainNode);
+  });
+
+  volume.addEventListener("mouseup", returnPrevDisplay);
+
   // functions for buttons of  music control
+
   function stateHandlerVisual(currentState){
     for(let key in state){
       playerState.classList.remove(state[key]);
-      console.log(state[key])
     }
     playerState.classList.add(currentState);
-    console.log(currentState)
   }
 
   function play(arr, index, list){
@@ -209,12 +324,17 @@ document.addEventListener("DOMContentLoaded", () => {
       musicPreviousSetup(arr, index);
       showSong(list, index);
       volumeGain(gainNode);
+      stateHandlerVisual(state.play);
 
+      filters.forEach((e,i) => e.gain.value = freqSlider[i].value);
+      listOfSource.get(arr[index]).connect(filters[0]);
+      filters[filters.length -1].connect(context.destination);
       listOfSource.get(arr[index]).connect(context.destination);
       listOfSource.get(arr[index]).connect(gainNode);
       listOfSource.get(arr[index]).connect(pannerNode);
-      stateHandlerVisual(state.play);
+
       timer ? clearTimeout(timer) : false;
+
       checkQuality();
       arr[index].play();
     }
@@ -285,6 +405,7 @@ document.addEventListener("DOMContentLoaded", () => {
       play(arr, 0, list);
     }
   }
+
   function clearPlaylist(arr, index, list){
     console.log(arr , index);
     if(arr.length > 0 ){
