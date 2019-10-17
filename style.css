@@ -161,6 +161,15 @@
   line-height: 35.5px;
   text-align: center;
 }
+.display_freqVisual{
+  width: 135px;
+  height: 34px;
+  margin-left: 12px;
+}
+.canvas_freq{
+  width: 135px;
+  height: 34px;
+}
 .header_music_bar{
   width: 275px;
   height: 24px;

@@ -18,11 +18,14 @@ document.addEventListener("DOMContentLoaded", () => {
         playerState = document.querySelector(".fa"),
         freqSlider = document.querySelectorAll(".freq"),
         canvas = document.querySelector("#canvas"),
-        labelHandler = document.querySelector(".labelDB"),
         ctx = canvas.getContext("2d"),
+        canvasFreq = document.querySelector(".canvas_freq"),
+        ctxFreq = canvasFreq.getContext("2d"),
+        labelHandler = document.querySelector(".labelDB"),
         context = new (window.AudioContext || window.webkitAudioContext),
         pannerNode = context.createStereoPanner(),
         gainNode = context.createGain(),
+        analyserNode = context.createAnalyser(),
         state = {
           play: "fa-play",
           pause: "fa-pause",
@@ -39,15 +42,19 @@ let info = document.querySelector(".block-info");
       },
       current = 0,
       timer,
+      animFrame,
       points = [{x:0,y:17.5},{x:20.9,y:17.5},{x:41.8,y:17.5},{x:62.7,y:17.5},{x:83.6,y:17.5},
              {x:104.5,y:17.5},{x:125.4,y:17.5},{x:146.3,y:17.5},{x:167.2,y:17.5},{x:188.1,y:17.5}],
       arrMusicSize = [],
       listOfSource = new WeakMap(),
       listOfSongs  = [];
 
+      analyserNode.connect(gainNode);
+      analyserNode.connect(pannerNode);
       gainNode.connect(pannerNode);
       pannerNode.connect(context.destination);
       gainNode.connect(context.destination);
+      analyserNode.connect(context.destination);
 
   timeLine.value = 0;
   playlistAllTime.forEach(e => e.textContent = "00:00");
@@ -195,6 +202,7 @@ let info = document.querySelector(".block-info");
       current = i;
     }));
   }
+
 // function for dynamics color of input
 
 function dynamicColors(inp, max, counter=0, colorCnt1 = 0, colorCnt2 =0){
@@ -215,6 +223,36 @@ function dynColorBalance(inp){
     console.log(`rgb(255, ${value * -255 +255}, 0)`);
   }
 }
+
+// function music visualization
+
+function musicVis(){
+  analyserNode.fftSize = 128;
+  let bufferLength = analyserNode.frequencyBinCount,
+      dataArr = new Uint8Array(bufferLength),
+      gradient = ctxFreq.createLinearGradient(0,34,0,135);
+      gradient.addColorStop(0.2, 'red');
+      gradient.addColorStop(0.8,'yellow');
+      gradient.addColorStop(1, 'green');
+      ctxFreq.clearRect(0,0, canvasFreq.width, canvasFreq.heigth);
+
+  function draw(){
+    ctxFreq.clearRect(0,0, canvasFreq.width, canvasFreq.height);
+    analyserNode.getByteFrequencyData(dataArr);
+    let barWidth = (canvasFreq.width / bufferLength ),
+        barHeight,
+        x = 0;
+    for(let i = 0; i < bufferLength; i++){
+      barHeight = dataArr[i]/1.1;
+      ctxFreq.fillStyle =  gradient;
+      ctxFreq.fillRect(x, canvasFreq.height - barHeight/2, barWidth, barHeight/2);
+      x += barWidth + 3;
+    }
+  }
+  animFrame = setInterval(draw, 30);
+  draw();
+}
+
 // functions for music time and display
 
   function musicPreviousSetup(arr, index){
@@ -269,6 +307,7 @@ function dynColorBalance(inp){
       musicBar.textContent = "";
     }
   }
+
   // music volume
   dynamicColors(volume,50,100, 510);
   dynColorBalance(balanceSlider);
@@ -332,11 +371,14 @@ function dynColorBalance(inp){
       listOfSource.get(arr[index]).connect(context.destination);
       listOfSource.get(arr[index]).connect(gainNode);
       listOfSource.get(arr[index]).connect(pannerNode);
+      listOfSource.get(arr[index]).connect(analyserNode);
 
       timer ? clearTimeout(timer) : false;
+      animFrame ? clearTimeout(animFrame) : false;
 
       checkQuality();
       arr[index].play();
+      musicVis();
     }
   }
 
@@ -344,6 +386,7 @@ function dynColorBalance(inp){
     if(arr.length > 0){
        arr[index].pause();
        stateHandlerVisual(state.pause);
+       animFrame ? clearTimeout(animFrame) : false;
        let value = displayTime[0].textContent;
        timer = setInterval(() => {
             displayTime.forEach(e => {
@@ -365,7 +408,9 @@ function dynColorBalance(inp){
       timeLineHandler(0);
       stateHandlerVisual(state.stop);
       timer ? clearTimeout(timer) : false;
+      animFrame ? clearTimeout(animFrame) : false;
       musicQuality.forEach(e => e.classList.remove("activeQuality"));
+      ctxFreq.clearRect(0,0, canvasFreq.width, canvasFreq.height);
     }
   }
 
