@@ -92,7 +92,20 @@ let info = document.querySelector(".block-info");
 
   timeLine.value = 0;
   playlistAllTime.forEach(e => e.textContent = "00:00");
-  
+
+  // repeat and shuffle fucntions
+
+  repeat.addEventListener("click", () => {
+    repeatState = !repeatState;
+    repeat.classList.toggle("repeat_on");
+  });
+  shuffle.addEventListener("click", () => {
+    shuffleState = !shuffleState;
+    shuffle.classList.toggle("shuffle_on");
+  });
+  function shuffleMusic(max){
+    return Math.floor(Math.random() *(max +1));
+  }
   // pressets
 
   for(let key in pressetsList){
@@ -150,7 +163,7 @@ let info = document.querySelector(".block-info");
   ptsReassign(points);
   canvasEq(points, ctx);
 
-  //fucntion frequency
+  //function frequency
 
   function createFilter(freq){
     let filter = context.createBiquadFilter();
@@ -423,7 +436,7 @@ function musicVis(){
     playerState.classList.add(currentState);
   }
 
-  function play(arr, index, list){
+  function play(arr, index, list, bool){
     if(arr.length > 0){
       balanceOutput(pannerNode, arr[index]);
       musicPreviousSetup(arr, index);
@@ -508,14 +521,15 @@ function musicVis(){
     musicSetSettings(arr, index, true);
   }
 
-  function onEnd(arr, i, list, bool){
+  function onEnd(arr, i, list, repeat, shuffle){
     if(arr.length != i){
-      play(arr, i, list);
+      if(shuffle) i = shuffleMusic(arr.length);
       current = i;
+      play(arr, i, list);
       musicSetSettings(arr, i, true);
-    } else if(bool){
-      play(arr, 0, list);
+    } else if(repeat){
       current = 0;
+      play(arr, 0, list);
     }else{
       stop(arr, i - 1);
      }
@@ -551,7 +565,7 @@ function musicVis(){
         song.type = this.files[i].type;
         song.src = URL.createObjectURL(this.files[i]);
 
-        song.addEventListener("ended", () => onEnd(listOfSongs, i+1, playlistMusicList), false);
+        song.addEventListener("ended", () => onEnd(listOfSongs, i+1, playlistMusicList, repeatState, shuffleState), false);
         song.addEventListener("timeupdate", timeLineHandler, false);
         song.addEventListener("timeupdate", displayTimer, false);
 

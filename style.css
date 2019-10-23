@@ -403,12 +403,18 @@ background: url("./img/next.png") no-repeat center / cover;
   border: none;
   cursor: pointer;
 }
+.shuffle_on{
+  background: url("./img/shuffle.png") no-repeat center / cover;
+}
 .btnRepeat{
   background: url("./img/repeatoff.png") no-repeat center / cover;
   width: 47px;
   height: 23px;
   border: none;
   cursor: pointer;
+}
+.repeat_on{
+  background: url("./img/repeat.png") no-repeat center / cover;
 }
 .player_main_logo{
   background: url("./img/winamplogo.png") no-repeat center / cover;
