@@ -15,6 +15,8 @@ document.addEventListener("DOMContentLoaded", () => {
         volume = document.querySelector(".volume"),
         balanceSlider = document.querySelector(".changeSide"),
         musicQuality = document.querySelectorAll(".music_mono, .music_stereo"),
+        repeat = document.querySelector(".btnRepeat"),
+        shuffle = document.querySelector(".btnShuffle"),
         btnPressets = document.querySelector(".btn_pressets"),
         pressets = document.querySelector(".pressets"),
         playerState = document.querySelector(".fa"),
@@ -73,6 +75,8 @@ let info = document.querySelector(".block-info");
       current = 0,
       timer,
       animFrame,
+      repeatState = false,
+      shuffleState = false,
       points = [{x:0,y:17.5},{x:20.9,y:17.5},{x:41.8,y:17.5},{x:62.7,y:17.5},{x:83.6,y:17.5},
              {x:104.5,y:17.5},{x:125.4,y:17.5},{x:146.3,y:17.5},{x:167.2,y:17.5},{x:188.1,y:17.5}],
       arrMusicSize = [],
@@ -88,6 +92,7 @@ let info = document.querySelector(".block-info");
 
   timeLine.value = 0;
   playlistAllTime.forEach(e => e.textContent = "00:00");
+  
   // pressets
 
   for(let key in pressetsList){
@@ -321,6 +326,7 @@ function musicVis(){
     });
       timeLine.value = 0;
       displayMusicInfo[1].textContent = context.sampleRate/1000;
+      returnPrevDisplay();
   }
 
   function musicSetSettings(arr, index, bool){
@@ -440,6 +446,7 @@ function musicVis(){
       arr[index].play();
       musicVis();
     }
+    console.log(current, index)
   }
 
   function pause(arr,index){
@@ -501,14 +508,17 @@ function musicVis(){
     musicSetSettings(arr, index, true);
   }
 
-  function onEnd(arr, i, list){
+  function onEnd(arr, i, list, bool){
     if(arr.length != i){
       play(arr, i, list);
       current = i;
       musicSetSettings(arr, i, true);
-    } else {
+    } else if(bool){
       play(arr, 0, list);
-    }
+      current = 0;
+    }else{
+      stop(arr, i - 1);
+     }
   }
 
   function clearPlaylist(arr, index, list){
