@@ -17,6 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
         musicQuality = document.querySelectorAll(".music_mono, .music_stereo"),
         repeat = document.querySelector(".btnRepeat"),
         shuffle = document.querySelector(".btnShuffle"),
+        btnEqualizerSwitch = document.querySelector(".btn_equalizer"),
         btnPressets = document.querySelector(".btn_pressets"),
         pressets = document.querySelector(".pressets"),
         playerState = document.querySelector(".fa"),
@@ -77,6 +78,7 @@ let info = document.querySelector(".block-info");
       animFrame,
       repeatState = false,
       shuffleState = false,
+      eqState = true,
       points = [{x:0,y:17.5},{x:20.9,y:17.5},{x:41.8,y:17.5},{x:62.7,y:17.5},{x:83.6,y:17.5},
              {x:104.5,y:17.5},{x:125.4,y:17.5},{x:146.3,y:17.5},{x:167.2,y:17.5},{x:188.1,y:17.5}],
       arrMusicSize = [],
@@ -222,6 +224,15 @@ let info = document.querySelector(".block-info");
   labelHandler.addEventListener("click", event => {
     if(event.target.tagName == "SPAN"){
       pressetEq(event.target.getAttribute("name"));
+    }
+  });
+  btnEqualizerSwitch.addEventListener("click", () => {
+    eqState = !eqState;
+    btnEqualizerSwitch.classList.toggle("eq_off");
+    if(eqState){
+      listOfSource.get(listOfSongs[current]).connect(filters[0]);
+    } else {
+      listOfSource.get(listOfSongs[current]).disconnect(filters[0]);
     }
   });
 
@@ -443,9 +454,10 @@ function musicVis(){
       showSong(list, index);
       volumeGain(gainNode);
       stateHandlerVisual(state.play);
-
       filters.forEach((e,i) => e.gain.value = freqSlider[i].value);
-      listOfSource.get(arr[index]).connect(filters[0]);
+      if(eqState){
+        listOfSource.get(arr[index]).connect(filters[0]);
+      }
       filters[filters.length -1].connect(context.destination);
       listOfSource.get(arr[index]).connect(context.destination);
       listOfSource.get(arr[index]).connect(gainNode);

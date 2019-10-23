@@ -449,11 +449,14 @@ background: url("./img/next.png") no-repeat center / cover;
   width: 188px;
   background: url("./img/bgeq.svg") no-repeat center;
 }
-.btn_on{
+.btn_equalizer{
   border: none;
   background: url("./img/btnon.png") no-repeat center / cover;
   width: 46px;
   height: 23px;
+}
+.eq_off{
+  background: url("./img/btnoff.png") no-repeat center / cover;
 }
 .btn_auto{
   border: none;
