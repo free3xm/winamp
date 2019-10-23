@@ -15,17 +15,47 @@ document.addEventListener("DOMContentLoaded", () => {
         volume = document.querySelector(".volume"),
         balanceSlider = document.querySelector(".changeSide"),
         musicQuality = document.querySelectorAll(".music_mono, .music_stereo"),
+        btnPressets = document.querySelector(".btn_pressets"),
+        pressets = document.querySelector(".pressets"),
         playerState = document.querySelector(".fa"),
         freqSlider = document.querySelectorAll(".freq"),
         canvas = document.querySelector("#canvas"),
         ctx = canvas.getContext("2d"),
-        canvasFreq = document.querySelector(".canvas_freq"),
+        canvasFreq = document.querySelector("#canvas_freq"),
         ctxFreq = canvasFreq.getContext("2d"),
         labelHandler = document.querySelector(".labelDB"),
         context = new (window.AudioContext || window.webkitAudioContext),
         pannerNode = context.createStereoPanner(),
         gainNode = context.createGain(),
         analyserNode = context.createAnalyser(),
+        pressetsList = {
+          "Classical" : [0, 0, 0, 0, 0,
+                         0, -5.3, -5.3, -4.6, -6.6],
+          "Club" : [0, 2, 3.4, 3.4, 3.4,
+                    2, 0, 0, 0, 0],
+          "Dance" : [5.4, 4, 0, 0, 0,
+                     0, -4.6, -4.6, -4.6, 0],
+          "Flat" : [0, 0, 0, 0, 0,
+                    0, 0, 0, 0, 0],
+          "Full Bass" : [5.4, 5.4, 5.4, 3.4, 0,
+                   -3.3, -6, -8, -6, 0],
+          "Large Hall" : [6, 6, 3.4, 3.4, 0,
+                          -3.3, -3.3, -3.3, 0, 0],
+          "Live" : [-3.3, 0, 2, 2.7, 2.7,
+                    2.7, 2, 2, 2, 0],
+          "Party" : [4, 4, 0, 0, 0,
+                     0, 0, 0, 4, 4],
+          "Pop" : [-2, 2.7, 4, 4, 2,
+                    0, 0, 0, 0, 0],
+          "Reggae" : [0, 0, -4.6, 0, 2.7,
+                    3.4, 3.4, 0, 0, 0],
+          "Rock" : [3.4, 3.4, -4, -6, -3.3,
+                    2, 5.4, 5.4, 5.4, 5.4],
+          "Soft" : [2.7, 2, 0, 0, 0,
+                    2, 4.7, 5.4, 5.4, 5.4],
+          "Techno" : [4, 4, 0, -4, -3.3,
+                    0, 4.7, 4.7, 4.7, 4.7],
+        },
         state = {
           play: "fa-play",
           pause: "fa-pause",
@@ -58,6 +88,29 @@ let info = document.querySelector(".block-info");
 
   timeLine.value = 0;
   playlistAllTime.forEach(e => e.textContent = "00:00");
+  // pressets
+
+  for(let key in pressetsList){
+    let li  = document.createElement("li");
+        li.textContent = key;
+    pressets.appendChild(li);
+  }
+  document.body.addEventListener("click", event => {
+    let item = event.target.textContent;
+    if(pressetsList.hasOwnProperty(item)){
+      pressetEq(pressetsList[item], true);
+    }
+    event.target == btnPressets ? false : pressets.classList.add("display_item");
+  });
+  pressets.addEventListener("click", event => {
+    let item = event.target.textContent;
+    if(pressetsList.hasOwnProperty(item)){
+
+    }
+  });
+  btnPressets.addEventListener("click", () => {
+    pressets.classList.toggle("display_item");
+  });
 
   // canvas equalizer
 
@@ -134,8 +187,16 @@ let info = document.querySelector(".block-info");
     e.addEventListener("mouseup",returnPrevDisplay);
   });
 
-  function pressetEq(db){
-    freqSlider.forEach(e => e.value = db);
+  function pressetEq(db, bool){
+    freqSlider.forEach(( e, i ) => {
+      if(bool){
+        e.value = db[i];
+        filters[i].gain.value = db[i];
+      } else {
+         e.value = db;
+         filters[i].gain.value = db;
+        }
+    });
     ptsReassign(points);
     canvasEq(points, ctx);
   }
@@ -177,8 +238,8 @@ let info = document.querySelector(".block-info");
   }
 
    function countMusicTime(counter){
-    let firstNumber =  Math.floor(counter/60),
-        secondNumber =  Math.floor(counter%60);
+    let firstNumber =  Math.floor(counter / 60),
+        secondNumber =  Math.floor(counter % 60);
         firstNumber = firstNumber < 10 ? "0" + firstNumber : firstNumber;
         secondNumber = secondNumber < 10 ? "0" + secondNumber : secondNumber;
 
@@ -220,7 +281,6 @@ function dynColorBalance(inp){
     inp.style.background = "green";
   } else {
     inp.style.background = `rgb(255, ${value * -255 +255 }, 0)`;
-    console.log(`rgb(255, ${value * -255 +255}, 0)`);
   }
 }
 
@@ -452,7 +512,6 @@ function musicVis(){
   }
 
   function clearPlaylist(arr, index, list){
-    console.log(arr , index);
     if(arr.length > 0 ){
       arr[index].pause();
       list.childNodes.forEach(e => e.remove());

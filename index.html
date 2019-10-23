@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <script defer src="./main.js"></script>
+  <script defer src="./additional.js"></script>
   <link rel="stylesheet" href="./style.css">
   <link href="https://fonts.googleapis.com/css?family=VT323&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css">
@@ -32,7 +33,7 @@
             <div class="display_time"></div>
           </div>
           <div class="display_freqVisual">
-            <canvas class="canvas_freq"></canvas></div>
+            <canvas id="canvas_freq"></canvas></div>
         </div>
         <div class="player_main_controls">
           <div class="header_music_bar"><span class="musicBarScroll"></span></div>
@@ -89,7 +90,7 @@
       <div class="equalizer_text title_text">winamp equalizer</div>
       <div class="btn_wrapper">
         <button class="minimise"></button>
-        <button class="close"></button>
+        <button class="close" id="eqClose"></button>
       </div>
     </div>
     <div class="equalizer_wrapper section_wrapper">
@@ -99,8 +100,10 @@
           <button class="btn_auto"></button>
         </div>
         <div class="equalizer_line"><canvas id="canvas"></canvas></div>
-        <div class="equalizer_presets">
-          <button class="btn_presets"></button>
+        <div class="equalizer_pressets">
+          <button class="btn_pressets"></button>
+          <ul class="pressets display_item">
+          </ul>
         </div>
       </div>
       <div class="equalizer_main">
@@ -141,7 +144,7 @@
       <div class="playlist_text title_text">winamp playlist</div>
       <div class="btn_wrapper">
         <button class="minimise"></button>
-        <button class="close"></button>
+        <button class="close" id="plClose"></button>
       </div>
     </div>
     <div class="playlist_wrapper">
@@ -176,6 +179,5 @@
     </div>
   </div>
 </div>
-<div class="block-info"></div>
 </body>
 </html>
