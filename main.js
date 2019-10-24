@@ -27,6 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
         canvasFreq = document.querySelector("#canvas_freq"),
         ctxFreq = canvasFreq.getContext("2d"),
         labelHandler = document.querySelector(".labelDB"),
+        btnClosePlayer = document.querySelector("#closePlayer");
         context = new (window.AudioContext || window.webkitAudioContext),
         pannerNode = context.createStereoPanner(),
         gainNode = context.createGain(),
@@ -95,6 +96,15 @@ let info = document.querySelector(".block-info");
   timeLine.value = 0;
   playlistAllTime.forEach(e => e.textContent = "00:00");
 
+  // close player
+
+  btnClosePlayer.addEventListener("click", () => {
+    stop(listOfSongs, current);
+    clearPlaylist(listOfSongs, current, playlist);
+    document.querySelector(".winamp").classList.add("display_none");
+    document.querySelector(".winamp_label").classList.remove("display_none");
+  });
+
   // repeat and shuffle fucntions
 
   repeat.addEventListener("click", () => {
@@ -120,7 +130,7 @@ let info = document.querySelector(".block-info");
     if(pressetsList.hasOwnProperty(item)){
       pressetEq(pressetsList[item], true);
     }
-    event.target == btnPressets ? false : pressets.classList.add("display_item");
+    event.target == btnPressets ? false : pressets.classList.add("display_none");
   });
   pressets.addEventListener("click", event => {
     let item = event.target.textContent;
@@ -129,7 +139,7 @@ let info = document.querySelector(".block-info");
     }
   });
   btnPressets.addEventListener("click", () => {
-    pressets.classList.toggle("display_item");
+    pressets.classList.toggle("display_none");
   });
 
   // canvas equalizer
@@ -471,7 +481,6 @@ function musicVis(){
       arr[index].play();
       musicVis();
     }
-    console.log(current, index)
   }
 
   function pause(arr,index){
