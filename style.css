@@ -10,6 +10,9 @@ body{
   background:linear-gradient(0deg, rgba(81, 204, 226, 0.7) 0%, rgba(51, 105, 231, 0.9) 100%);
   overflow: hidden;
 }
+button {
+  outline: none;
+}
 .display_none{
   display: none;
 }
@@ -599,6 +602,22 @@ background: url("./img/next.png") no-repeat center / cover;
   border-radius: 5px;
   position: relative;
 }
+.info_eq{
+  display: flex;
+  justify-content: space-between;
+  width: 418px;
+  position: absolute;
+  bottom: -4px;
+  left: 21px;
+  color: #fff;
+  font-size: 14px;
+}
+.eq_freq_wrapper{
+  width: 319px;
+  display: flex;
+  justify-content: space-between;
+}
+
 .winamp_playlist{
   position: absolute;
   top: 80px;
