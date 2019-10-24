@@ -35,6 +35,9 @@ body{
   border: 1px dashed #fff;
   background: #000080;
 }
+.drag {
+  z-index: 1
+}
 .winamp{
   user-select: none;
 }
@@ -794,4 +797,32 @@ height: 13px;
 }
 .menu_time_playlist{
   display: inline-block;
+}
+.footer{
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  background: rgba(0, 0, 0, .9);
+  width: 100vw;
+  height: 30px;
+  padding: 0 2%;
+}
+.footer span{
+  font-size: 14px;
+  font-family: sans-serif;
+  color: #fff;
+}
+.footer nav{
+  margin-left: 20px;
+}
+.link{
+  font-size: 25px;
+  color: #fff;
+  transition: color 1s;
+}
+.link:hover{
+  color:#fb8c00;
 }

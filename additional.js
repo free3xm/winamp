@@ -14,6 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
         playlist = document.querySelector(".winamp_playlist"),
         winampLabel = document.querySelector(".icon_label");
 
+      let info = document.querySelector(".info");
 
   // select label
     document.addEventListener("click", event => {
@@ -54,22 +55,23 @@ document.addEventListener("DOMContentLoaded", () => {
     let elem = event.target.closest(".drag"),
         elemTitle = event.target.closest(".title_wrapper"),
         shiftX,
-        shiftY;
+        shiftY,
+        elemConnected = checkDest();
       if(!elemTitle) return false;
       shiftX = event.clientX - elem.getBoundingClientRect().left;
       shiftY = event.clientY - elem.getBoundingClientRect().top;
-      elem.style.position = "absolute";
-      elem.style.zIndex = "3";
+      elem.style.zIndex = 3;
       moveAt(event);
-    if(checkDest()) {
-      document.addEventListener("mousemove", moveAtAll , false);
-      document.addEventListener("mouseup", removeEvent.bind(null, moveAtAll));
-    }
-    else {
-      document.addEventListener("mousemove", moveAt , false);
-      document.addEventListener("mouseup", removeEvent.bind(null, moveAt));
-    }
 
+      document.addEventListener("mousemove", moveAtAll , false);
+      document.addEventListener("mouseup", removeEvent, false);
+
+      function removeEvent(){
+        document.removeEventListener("mousemove", moveAtAll);
+        elem.style.zIndex = 1;
+      }
+
+  // functions for drag elements
 
     function moveAt(event){
       elem.style.left = event.pageX - shiftX + "px";
@@ -78,31 +80,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function moveAtAll(event){
       moveAt(event);
-      moveOther(equalizer, 200,0);
-      moveOther(playlist, 0, 475);
+      if(elemConnected > 0) moveOther(equalizer, 200,0);
+      if(elemConnected == 2) moveOther(playlist, 0, 475);
     }
 
-    function removeEvent(fn){
-      document.removeEventListener("mousemove", fn);
-
+    function moveOther(e, t1, l1){
+      e.style.top = parseInt(player.style.top) + t1 +"px";
+      e.style.left = parseInt(player.style.left) + l1 + "px";
     }
+
+
+  // function check destination for elements
 
     function checkDest(){
       const elemPlayer = player.getBoundingClientRect(),
             elemEq = equalizer.getBoundingClientRect(),
-            elemPlaylist= playlist.getBoundingClientRect();
-      if(elem == player && checkElem()) return true
+            elemPlaylist= playlist.getBoundingClientRect(),
+            num = checkElem();
+      if(elem == player && num > 0) return num;
 
       function checkElem(){
         if(elemEq.top + 10 > elemPlayer.bottom && elemPlayer.right < 10 + elemPlaylist.left &&
            elemEq.top  < elemPlayer.bottom + 10 && 10 + elemPlayer.right > elemPlaylist.left){
-          return true;
+          return 2;
         }
+        if(elemEq.top + 10 > elemPlayer.bottom && elemEq.top  < elemPlayer.bottom + 10 ){
+          return 1;
+        }
+        return 0;
       }
-    }
-    function moveOther(e, t1, l1){
-      e.style.top = parseInt(player.style.top) + t1 +"px";
-      e.style.left = parseInt(player.style.left) + l1 + "px";
     }
   }
 });

@@ -118,6 +118,7 @@ let info = document.querySelector(".block-info");
   function shuffleMusic(max){
     return Math.floor(Math.random() *(max +1));
   }
+
   // pressets
 
   for(let key in pressetsList){
@@ -325,32 +326,32 @@ function dynColorBalance(inp){
 
 // function music visualization
 
-function musicVis(){
-  analyserNode.fftSize = 128;
-  let bufferLength = analyserNode.frequencyBinCount,
-      dataArr = new Uint8Array(bufferLength),
-      gradient = ctxFreq.createLinearGradient(0,34,0,135);
-      gradient.addColorStop(0.2, 'red');
-      gradient.addColorStop(0.8,'yellow');
-      gradient.addColorStop(1, 'green');
-      ctxFreq.clearRect(0,0, canvasFreq.width, canvasFreq.heigth);
+  function musicVis(){
+    analyserNode.fftSize = 128;
+    let bufferLength = analyserNode.frequencyBinCount,
+        dataArr = new Uint8Array(bufferLength),
+        gradient = ctxFreq.createLinearGradient(0,34,0,135);
+        gradient.addColorStop(0.2, 'red');
+        gradient.addColorStop(0.8,'yellow');
+        gradient.addColorStop(1, 'green');
+        ctxFreq.clearRect(0,0, canvasFreq.width, canvasFreq.heigth);
 
-  function draw(){
-    ctxFreq.clearRect(0,0, canvasFreq.width, canvasFreq.height);
-    analyserNode.getByteFrequencyData(dataArr);
-    let barWidth = (canvasFreq.width / bufferLength ),
-        barHeight,
-        x = 0;
-    for(let i = 0; i < bufferLength; i++){
-      barHeight = dataArr[i]/1.1;
-      ctxFreq.fillStyle =  gradient;
-      ctxFreq.fillRect(x, canvasFreq.height - barHeight/2, barWidth, barHeight/2);
-      x += barWidth + 3;
+    function draw(){
+      ctxFreq.clearRect(0,0, canvasFreq.width, canvasFreq.height);
+      analyserNode.getByteFrequencyData(dataArr);
+      let barWidth = (canvasFreq.width / bufferLength ),
+          barHeight,
+          x = 0;
+      for(let i = 0; i < bufferLength; i++){
+        barHeight = dataArr[i]/1.1;
+        ctxFreq.fillStyle =  gradient;
+        ctxFreq.fillRect(x, canvasFreq.height - barHeight/2, barWidth, barHeight/2);
+        x += barWidth + 3;
+      }
     }
+    animFrame = setInterval(draw, 30);
+    draw();
   }
-  animFrame = setInterval(draw, 30);
-  draw();
-}
 
 // functions for music time and display
 
