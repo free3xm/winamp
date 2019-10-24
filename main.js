@@ -234,7 +234,7 @@ let info = document.querySelector(".block-info");
 
   labelHandler.addEventListener("click", event => {
     if(event.target.tagName == "SPAN"){
-      pressetEq(event.target.getAttribute("name"));
+      pressetEq(event.target.getAttribute("data-name"));
     }
   });
   btnEqualizerSwitch.addEventListener("click", () => {
