@@ -455,6 +455,7 @@ background: url("./img/next.png") no-repeat center / cover;
   height: 200px;
   background: linear-gradient(to right, #1d1d2b 0%, #393a59 15% 95%, #212132 100%);
   border: 2px solid #5f5f66;
+  z-index: 2;
 }
 .equalizer_text:before{
   left: 6px;
